@@ -42,7 +42,7 @@ Bem-vindo(a) ao meu portfólio! Aqui você encontrará projetos práticos que de
 
 ## 🧠 Sobre Mim
 
-Sou Analista de Dados com experiência nas áreas de crédito e M\&A. Tenho paixão por transformar dados em insights acionáveis e estou sempre em busca de novos desafios que me permitam crescer profissionalmente.
+Sou Assistente de Crédito em transição de carreira para a área de Dados, com experiência nas áreas de Crédito e M&A. Tenho paixão por transformar dados em insights acionáveis e estou sempre em busca de novos desafios que impulsionem meu desenvolvimento profissional.
 
 ## 📫 Contato
 
