@@ -362,3 +362,11 @@ print(f"garantia: {formatar_valor(credito_garantia)}")
 # caminho_arquivo = r'C:\Users\username\Downloads\resultado_pre_analise.xlsx'
 # result_df.to_excel(caminho_arquivo, index=False)
 # print(f"Arquivo Excel exportado com sucesso para: {caminho_arquivo}")
+
+------------------------------------------------------------------------------------------------------------------
+
+Resultado da análise de crédito:
+          cliente                   nome_cliente      PORTE  indice_final  divida_pj    receita ANALISADO     JUSTIFICATIVA  CREDITO_ESTIMADO  garantia_ESTIMADO
+0  10293847000100           ALFA TECNOLOGIA LTDA  EMERGENTE           693    15000.0  1250000.0  APROVADO                                   0                0.0
+1  20938475000191        BETA CONSTRUÇÕES EIRELI   EXPANSÃO           589   250000.0  8750000.0     RISCO  Política interna                 0                0.0
+2  33445566000188  GAMA COMÉRCIO DE ALIMENTOS ME  EMERGENTE           507     2000.0   980000.0     RISCO  Política interna                 0                0.0
