@@ -7,7 +7,7 @@ Bem-vindo(a) ao meu portfólio! Aqui você encontrará projetos práticos que de
 ### 1. Sistema de Pré-Análise de Crédito com Regras Automatizadas
 
 * **Descrição:** Simulação de um sistema de pré-análise de crédito utilizando regras de negócio parametrizadas.
-* **Tecnologias:** Python, Pandas, Numpy, Ast, DateTime.
+* **Tecnologias:** Python, Pandas, Numpy, Ast, DateTime e Excel.
 * **Objetivo:** Automatizar a avaliação inicial de crédito com base em critérios definidos.
 * * **Link:** [Repositório no GitHub](https://github.com/sophia-michels2002/portfolio-analista-dados/blob/main/pre-analise-credito)
 
