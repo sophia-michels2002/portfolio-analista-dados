@@ -1,0 +1,364 @@
+import pandas as pd
+import numpy as np
+from datetime import datetime
+import ast
+
+# Criando o banco de dados fictício
+dadosficticios = [
+        {
+        "cliente": "10293847000100",
+        "nome_cliente": "ALFA TECNOLOGIA LTDA",
+        "data": "2015-06-10",
+        "cadastro": "SIM",
+        "cnae": "6201500",  # Desenvolvimento de software
+        "indice_pj": 678,
+        "associados": [
+            {"indice": 690, "porcentagem": 50.0},
+            {"indice": 745, "porcentagem": 50.0}
+        ],
+        "receita": 1250000.00,
+        "divida_pj": 15000.00,
+        "divida_pf": 0.00,
+        "mei": "NAO"
+    },
+    {
+        "cliente": "20938475000191",
+        "nome_cliente": "BETA CONSTRUÇÕES EIRELI",
+        "data": "2009-03-25",
+        "cadastro": "SIM",
+        "cnae": "4120400",  # Construção de edifícios
+        "indice_pj": 589,
+        "associados": [
+            {"indice": 612, "porcentagem": 60.0},
+            {"indice": 633, "porcentagem": 40.0}
+        ],
+        "receita": 8750000.00,
+        "divida_pj": 250000.00,
+        "divida_pf": 12000.00,
+        "mei": "NAO"
+    },
+    {
+        "cliente": "33445566000188",
+        "nome_cliente": "GAMA COMÉRCIO DE ALIMENTOS ME",
+        "data": "2012-11-05",
+        "cadastro": "SIM",
+        "cnae": "4721102",  # Comércio varejista de alimentos
+        "indice_pj": 512,
+        "associados": [
+            {"indice": 501, "porcentagem": 100.0}
+        ],
+        "receita": 980000.00,
+        "divida_pj": 2000.00,
+        "divida_pf": 500.00,
+        "mei": "SIM"
+    }
+]
+
+# Transforma dadosfictícios em dataframe
+df = pd.DataFrame(dadosficticios)
+
+# Função JUSTIFICATIVA
+def JUSTIFICATIVA():
+    return "JUSTIFICATIVA"
+
+# Calcula indice final do sócio
+def calcular_indice_final_associados(associados):
+    if isinstance(associados, str):
+        try:
+            associados = ast.literal_eval(associados)
+        except Exception as e:
+            print(f"Erro ao converter associados: {associados}, erro: {e}")
+            return None
+    
+    soma_indice_porcentagem = 0
+
+    if isinstance(associados, list):  # garante que estamos lidando com uma lista
+        for socio in associados:
+            if isinstance(socio, dict) and 'indice' in socio and 'porcentagem' in socio:
+                soma_indice_porcentagem += socio['indice'] * socio['porcentagem']
+            else:
+                print(f"Formato inesperado de indice: {socio}")
+    
+    return soma_indice_porcentagem
+
+
+# Classifica restritivo
+def classificar_restritivo(row):
+    try:
+        if pd.isnull(row['divida_pj']) or pd.isnull(row['divida_pf']) or pd.isnull(row['receita']) or row['receita'] == 0:
+            return "SEM INFO"
+        cond1 = row['divida_pj'] / row['receita'] < 0.050
+        cond2 = row['divida_pf'] / row['receita'] < 0.050
+        return 1 if cond1 and cond2 else 0
+    except:
+        return "SEM INFO"
+
+# --------- PARÂMETROS CNAE BLOQUEADO E OUTROS --------- #
+cnae_bloqueado_lista = [
+8299701, 9319199, 9329804, 8299706, 9200399 
+]
+
+parametros = pd.DataFrame({
+    'SEGMENTO': ['INICIAL', 'INICIAL', 'INICIAL', 'INICIAL', 
+                 'EMERGENTE', 'EMERGENTE', 'EMERGENTE', 'EMERGENTE',
+                 'EXPANSÃO', 'EXPANSÃO', 'EXPANSÃO', 'EXPANSÃO', 
+                 'CONSOLIDADO', 'CONSOLIDADO', 'CONSOLIDADO', 'CONSOLIDADO',
+                 'LÍDER', 'LÍDER', 'LÍDER', 'LÍDER'],
+    
+    'RATING_INTERNO': [9, 8, 7, 6, 9, 8, 7, 6, 9, 8, 7, 6, 9, 8, 7, 6, 9, 8, 7, 6],
+    
+    'chave': ['INICIAL9', 'INICIAL8', 'INICIAL7', 'INICIAL6',
+              'EMERGENTE9', 'EMERGENTE8', 'EMERGENTE7', 'EMERGENTE6',
+              'EXPANSÃO9', 'EXPANSÃO8', 'EXPANSÃO7', 'EXPANSÃO6',
+              'CONSOLIDADO9', 'CONSOLIDADO8', 'CONSOLIDADO7', 'CONSOLIDADO6',
+              'LÍDER9', 'LÍDER8', 'LÍDER7', 'LÍDER6'],
+    
+    'Multiplicador Máximo': [1.2, 1.0, 0.9, 0.6, 
+                             1.8, 1.4, 1.1, 0.7, 
+                             2.2, 1.9, 1.4, 1.0, 
+                             2.8, 2.3, 1.8, 1.2,
+                             3.5, 3.0, 2.6, 1.7],
+    
+    'credito Rápido': [10000, 8000, 6000, 5000, 
+                      25000, 20000, 15000, 10000, 
+                      60000, 50000, 40000, 30000, 
+                      120000, 100000, 85000, 70000,
+                      250000, 200000, 180000, 150000],
+})
+
+# Adicionando coluna 'concat' que estava sendo usada mas não foi definida
+parametros['concat'] = parametros['SEGMENTO'] + parametros['RATING_INTERNO'].astype(str)
+
+# --------- FUNÇÕES --------- #
+def classificar_segmento(receita):
+    if pd.isna(receita) or receita == 0:
+        return "Desconhecido"
+    elif receita < 500_000:
+        return "INICIAL"
+    elif receita < 5_000_000:
+        return "EMERGENTE"
+    elif receita < 50_000_000:
+        return "EXPANSÃO"
+    elif receita < 200_000_000:
+        return "CONSOLIDADO"
+    else:
+        return "LÍDER"
+
+df['SEGMENTO'] = df['receita'].apply(classificar_segmento) 
+
+# Função simplificada para calcular o tempo de constituição
+def calcular_tempo_constituicao(data):
+    # Verifica se a data é inválida ou "0" e retorna o motivo de negação
+    if data == '0' or pd.isna(data):
+        return JUSTIFICATIVA()
+    
+    # Tenta converter a data
+    data = pd.to_datetime(data, errors='coerce')
+    
+    # Se a conversão falhar (erro de conversão), retorna o motivo de negação
+    if pd.isna(data):
+        return JUSTIFICATIVA()
+    
+    # Calcula a diferença de dias e retorna 1 ou 0 baseado no critério
+    return int((datetime.now() - data).days >= 720)
+
+# Aplicando a função ao DataFrame
+df['tempo_contist_maior2ano'] = df['data'].apply(calcular_tempo_constituicao)
+
+def verificar_cnae_bloqueado(cnae):
+    try:
+        cnae_num = int(cnae)
+        return int(not (cnae_num in cnae_bloqueado_lista))
+    except (ValueError, TypeError):
+        return 0
+
+def calcular_CreditRating(indice_final):
+    if indice_final > 800:
+        return 7
+    elif indice_final > 700:
+        return 6
+    elif indice_final > 600:
+        return 5
+    elif indice_final > 400:
+        return 4
+    elif indice_final > 300:
+        return 3
+    elif indice_final > 100:
+        return 2
+    else:
+        return 1
+
+# --------- PROCESSAMENTO --------- #
+df['PORTE'] = df['receita'].apply(classificar_segmento)
+df['cadastro'] = (df['cadastro'].str.strip() == 'SIM').astype(int)
+df['tempo_contist_maior2ano'] = df['data'].apply(calcular_tempo_constituicao)
+df['cnae_nao_bloqueado'] = df['cnae'].apply(verificar_cnae_bloqueado)
+
+# indice data
+df['indice_pj_maior400'] = (df['indice_pj'] > 401).astype(int)
+
+# indice Final Sócios
+df['indice_final_associados'] = df['associados'].apply(calcular_indice_final_associados)
+
+# indice final
+def calcular_indice_final_associados_2(associados):
+    # Se os dados vierem como string, converte para lista de dicionários
+    if isinstance(associados, str):
+        try:
+            associados = ast.literal_eval(associados)
+        except Exception as e:
+            print(f"Erro ao converter associados: {associados}, erro: {e}")
+            return 0
+
+    soma_indice_participacao = 0
+    total_participacao = 0
+
+    for socio in associados:
+        porcentagem = socio.get('porcentagem', 0)
+        indice = socio.get('indice', 0)
+
+        proporcao = porcentagem / 100  # Converte percentual em proporção
+        soma_indice_participacao += indice * proporcao
+        total_participacao += proporcao
+
+    # Evita divisão por zero
+    if total_participacao > 0:
+        return soma_indice_participacao
+    else:
+        return 0
+
+# Aplica a função aos sócios
+df['indice_final_associados'] = df['associados'].apply(calcular_indice_final_associados_2)
+
+# Aplica os pesos conforme o porte
+conditions = [
+    df['PORTE'] == 'INICIAL',
+    df['PORTE'] == 'EMERGENTE'
+]
+choices = [
+    0.8 * df['indice_pj'] + 0.2 * df['indice_final_associados'],
+    0.6 * df['indice_pj'] + 0.4 * df['indice_final_associados']
+]
+
+df['indice_final'] = np.select(conditions, choices, default=df['indice_pj'])
+
+# Sede
+cliente_formatado = df['cliente'].astype(str).str.zfill(14)
+df['Sede'] = (cliente_formatado.str[8:12] == '0001').astype(int)
+
+df['dividaclass'] = df.apply(classificar_restritivo, axis=1)
+
+# ANALISADO
+def verificar_pre_analise(row):
+    if (row['cadastro'] == 1 and
+        row['tempo_contist_maior2ano'] == 1 and
+        row['cnae_nao_bloqueado'] == 1 and
+        row['indice_pj_maior400'] == 1 and
+        row['Sede'] == 1 and
+        row['dividaclass'] == 1):
+
+        if row['CreditRating'] == 4:
+            return 'RISCO'
+        elif row['CreditRating'] >= 5:
+            return 'APROVADO'
+    return 'NEGADO'
+
+df['CreditRating'] = df['indice_final'].apply(calcular_CreditRating)
+
+df['ANALISADO'] = df.apply(verificar_pre_analise, axis=1)
+
+# MOTIVO NEGAÇÃO
+def JUSTIFICATIVA_completo(row):
+    if row['ANALISADO'] == 'ANALISADO':
+        return ' '
+    if row['cadastro'] == 0:
+        return 'Sem informação cadastral'
+    if row['tempo_contist_maior2ano'] == 0:
+        return 'Tempo de constituição menor que 2 ano'
+    if row['cnae_nao_bloqueado'] == 0:
+        return 'CNAE bloqueado'
+    if row['dividaclass'] == 0:
+        return 'Com dívida relevante'
+    if row['indice_pj_maior400'] == 0:
+        return 'indice baixo'
+    if row['Sede'] == 0:
+        return 'Empresa Filial'
+
+    return 'Política interna'
+
+df['JUSTIFICATIVA'] = df.apply(JUSTIFICATIVA_completo, axis=1)
+
+# Credito ESTIMADOS
+def calcular_credito(row):
+    if row['PORTE'] == 'LÍDER':
+        return 'MAIS DOCUMENTOS'
+    if row['ANALISADO'] == 'NEGADO':
+        return 0
+    chave = row['PORTE'] + str(int(row['CreditRating']))
+    linha_param = parametros[parametros['concat'] == chave]
+    if linha_param.empty:
+        return 0
+    
+    # Ajustando para colunas disponíveis no DataFrame parametros
+    credito = min(linha_param.iloc[0]['Multiplicador Máximo'] * (row['receita']/12), 
+                 linha_param.iloc[0]['credito Rápido'])
+    return credito
+
+def calcular_credito_garantia(row):
+    if row['PORTE'] == 'LÍDER' or row['ANALISADO'] == 'NEGADO': 
+        return 0
+    return min(row['CREDITO_ESTIMADO']/3, 300000)
+
+df['CREDITO_ESTIMADO'] = df.apply(calcular_credito, axis=1)
+df['garantia_ESTIMADO'] = df.apply(calcular_credito_garantia, axis=1)
+
+pd.set_option('display.max_columns', None)       # mostra todas as colunas
+pd.set_option('display.expand_frame_repr', False)  # evita quebra de linha
+pd.set_option('display.width', 1000)             # aumenta a largura total permitida
+
+# Display resultados
+print("Resultado da análise de crédito:")
+result_df = df[['cliente', 'nome_cliente', 'PORTE', 'indice_final', 'divida_pj', 'receita', 'ANALISADO', 'JUSTIFICATIVA', 'CREDITO_ESTIMADO', 'garantia_ESTIMADO']].copy()
+result_df['indice_final'] = result_df['indice_final'].astype(int)
+print(result_df)
+
+credito = 0
+credito_garantia = 0
+
+# Print detalhes da analise para ajudar no debug
+for i, row in df.iterrows():
+    print(f"\nDetalhes para cliente {row['cliente']}:")
+    print(f"Razão Social: {row['nome_cliente']}")
+    print(f"PORTE: {row['PORTE']}")
+    print(f"Situação Cadastral: {row['cadastro']}")
+    print(f"Data Fundação: {row['data']} (tempo_contist_maior2ano: {row['tempo_contist_maior2ano']})")
+    print(f"CNAE: {row['cnae']} (cnae_nao_bloqueado: {row['cnae_nao_bloqueado']})")
+    print(f"INDICE PJ: {row['indice_pj']:.0f} (indice_pj_maior400: {row['indice_pj_maior400']:.0f})")
+    print(f"INDICE FINAL SOCIO: {row['indice_final_associados']:.0f}")
+    print(f"INDICE FINAL: {row['indice_final']:.0f} (CreditRating: {row['CreditRating']:.0f})")
+    print(f"DÍVIDA: R$ {row['divida_pj']:,.2f}")
+    print(f"Sede: {row['Sede']}")
+    print(f"Faturamento: R$ {row['receita']:,.2f}")
+    print(f"Resultado: {row['ANALISADO']}")
+    if row['ANALISADO'] == 'NEGADO':
+        print(f"Justificativa: {row['JUSTIFICATIVA']}")
+    else:
+        credito = row['CREDITO_ESTIMADO']
+        garantia = row['garantia_ESTIMADO']
+
+# Função para formatar o valor com 2 casas decimais se for numérico
+def formatar_valor(valor):
+    if isinstance(valor, (int, float)):  # Verifica se é numérico
+        return f"{valor:.2f}"
+    return valor  # Se for string, retorna a string sem alteração
+
+# Exibe o credito formatado
+print(f"credito: {formatar_valor(credito)}")
+
+# Exibe o garantia formatado
+print(f"garantia: {formatar_valor(credito_garantia)}")
+
+# Comentando a exportação do Excel para evitar erros em ambiente que não tenha acesso ao caminho especificado
+# caminho_arquivo = r'C:\Users\username\Downloads\resultado_pre_analise.xlsx'
+# result_df.to_excel(caminho_arquivo, index=False)
+# print(f"Arquivo Excel exportado com sucesso para: {caminho_arquivo}")
