@@ -4,7 +4,8 @@ Bem-vindo(a) ao meu portfólio! Aqui você encontrará projetos práticos que de
 
 ## 📂 Projetos
 
-### 3. Determinantes da Produtividade nos Países: Um Estudo Econômico-Quantitativo
+### 1. Determinantes da Produtividade nos Países: Um Estudo Econômico-Quantitativo
+
 * **Descrição:** Análise dos principais fatores que influenciam a produtividade de diferentes países, utilizando dados econômicos internacionais. O estudo avalia variáveis como capital humano, investimento em infraestrutura, tecnologia e instituições.
 * **Tecnologias:** Python, Pandas, regressão linear (Statsmodels/Scikit-Learn), Excel, dados do Banco Mundial/OCDE.
 * **Objetivo:** Identificar os fatores mais relevantes para o crescimento da produtividade e propor insights com base em evidências quantitativas.
