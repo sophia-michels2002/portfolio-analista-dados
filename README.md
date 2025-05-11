@@ -4,8 +4,12 @@ Bem-vindo(a) ao meu portfólio! Aqui você encontrará projetos práticos que de
 
 ## 📂 Projetos
 
+### 3. Determinantes da Produtividade nos Países: Um Estudo Econômico-Quantitativo
+* **Descrição:** Análise dos principais fatores que influenciam a produtividade de diferentes países, utilizando dados econômicos internacionais. O estudo avalia variáveis como capital humano, investimento em infraestrutura, tecnologia e instituições.
+* **Tecnologias:** Python, Pandas, regressão linear (Statsmodels/Scikit-Learn), Excel, dados do Banco Mundial/OCDE.
+* **Objetivo:** Identificar os fatores mais relevantes para o crescimento da produtividade e propor insights com base em evidências quantitativas.
 
-### 1. Simulador de Risco de Crédito com Machine Learning
+### 2. Simulador de Risco de Crédito com Machine Learning
 
 * **Descrição:** Modelo preditivo para estimar o risco de inadimplência utilizando algoritmos de machine learning.
 * **Tecnologias:** Python, Scikit-learn, Jupyter Notebook.
